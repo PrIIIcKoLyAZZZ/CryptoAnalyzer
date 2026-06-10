@@ -82,7 +82,10 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        LoadMarketDataStatus status = CalculateStatus(results);
+
         return new LoadMarketDataResponse(
+            Status: status,
             RequestedSymbolsCount: request.Symbols.Count,
             LoadedPointsCount: results.Sum(result => result.LoadedPointsCount),
             SkippedDuplicatesCount: results.Sum(result => result.SkippedDuplicatesCount),
@@ -134,6 +137,34 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
             throw new InvalidOperationException("Market data provider source code cannot be empty.");
 
         return sourceCode.Trim().ToUpperInvariant();
+    }
+
+    private static LoadMarketDataStatus CalculateStatus(
+        List<LoadMarketDataSymbolResult> results)
+    {
+        if (results.Count == 0)
+            return LoadMarketDataStatus.Failed;
+
+        bool hasSuccess = results.Any(result => result.Error is null);
+        bool hasError = results.Any(result => result.Error is not null);
+
+        if (hasSuccess && hasError)
+            return LoadMarketDataStatus.PartialSuccess;
+
+        if (hasSuccess)
+            return LoadMarketDataStatus.Success;
+
+        return LoadMarketDataStatus.Failed;
+    }
+
+    private static List<MarketDataPointDto> FilterPointsByPeriod(
+        IReadOnlyCollection<MarketDataPointDto> points,
+        DateTime fromUtc,
+        DateTime toUtc)
+    {
+        return points
+            .Where(point => point.TimestampUtc >= fromUtc && point.TimestampUtc <= toUtc)
+            .ToList();
     }
 
     private IReadOnlyCollection<IMarketDataProvider> SelectProviders(string? sourceCode)
@@ -189,12 +220,17 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
                 toUtc,
                 cancellationToken);
 
+            IReadOnlyCollection<MarketDataPointDto> filteredPoints = FilterPointsByPeriod(
+                points,
+                fromUtc,
+                toUtc);
+
             return await SaveNewPointsAsync(
                 assetId,
                 exchange.Id,
                 symbol,
                 sourceCode,
-                points,
+                filteredPoints,
                 cancellationToken);
         }
         catch (OperationCanceledException)
