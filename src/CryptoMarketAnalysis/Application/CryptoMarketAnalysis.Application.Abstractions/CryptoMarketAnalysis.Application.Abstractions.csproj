@@ -6,4 +6,9 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\CryptoMarketAnalysis.Domain\CryptoMarketAnalysis.Domain.csproj" />
+      <ProjectReference Include="..\CryptoMarketAnalysis.Application.Contracts\CryptoMarketAnalysis.Application.Contracts.csproj" />
+    </ItemGroup>
+
 </Project>
