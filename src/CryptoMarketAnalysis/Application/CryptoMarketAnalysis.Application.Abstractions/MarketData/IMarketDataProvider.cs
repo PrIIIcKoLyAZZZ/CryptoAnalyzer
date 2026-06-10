@@ -4,6 +4,8 @@ namespace CryptoMarketAnalysis.Application.Abstractions.MarketData;
 
 public interface IMarketDataProvider
 {
+    string SourceCode { get; }
+
     Task<IReadOnlyCollection<MarketDataPointDto>> GetHistoricalAsync(
         string symbol,
         DateTime fromUtc,
