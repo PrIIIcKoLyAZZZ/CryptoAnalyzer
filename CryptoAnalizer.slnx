@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/CryptoMarketAnalysis/">
+    <Project Path="src/CryptoMarketAnalysis/CryptoMarketAnalysis.Domain/CryptoMarketAnalysis.Domain.csproj" />
+    <Project Path="src/CryptoMarketAnalysis/CryptoMarketAnalysis.Worker/CryptoMarketAnalysis.Worker.csproj" />
+  </Folder>
+  <Folder Name="/src/CryptoMarketAnalysis/Api/">
+    <Project Path="src/CryptoMarketAnalysis/Api/CryptoMarketAnalysis.Api/CryptoMarketAnalysis.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/CryptoMarketAnalysis/Application/">
+    <Project Path="src/CryptoMarketAnalysis/Application/CryptoMarketAnalysis.Application.Abstractions/CryptoMarketAnalysis.Application.Abstractions.csproj" />
+    <Project Path="src/CryptoMarketAnalysis/Application/CryptoMarketAnalysis.Application.Contracts/CryptoMarketAnalysis.Application.Contracts.csproj" />
+    <Project Path="src/CryptoMarketAnalysis/Application/CryptoMarketAnalysis.Application/CryptoMarketAnalysis.Application.csproj" />
+  </Folder>
+  <Folder Name="/src/CryptoMarketAnalysis/Infrastructure/">
+    <Project Path="src/CryptoMarketAnalysis/Infrastructure/CryptoMarketAnalysis.Infrastructure/CryptoMarketAnalysis.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+</Solution>
