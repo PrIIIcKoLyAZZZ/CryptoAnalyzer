@@ -44,7 +44,7 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
     {
         ValidateRequest(request);
 
-        IReadOnlyCollection<IMarketDataProvider> providers = SelectProviders(request.SourceCode);
+        IReadOnlyCollection<IMarketDataProvider> providers = SelectProviders(request.MarketDataSourceCode);
 
         var results = new List<LoadMarketDataSymbolResult>();
 
@@ -111,7 +111,7 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
         if (request.FromUtc >= request.ToUtc)
             throw new ArgumentException("From date must be earlier than to date.", nameof(request));
 
-        if (request.SourceCode is not null && string.IsNullOrWhiteSpace(request.SourceCode))
+        if (request.MarketDataSourceCode is not null && string.IsNullOrWhiteSpace(request.MarketDataSourceCode))
             throw new ArgumentException("Source code cannot be empty.", nameof(request));
     }
 
@@ -175,23 +175,23 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
             .ToList();
     }
 
-    private IReadOnlyCollection<IMarketDataProvider> SelectProviders(string? sourceCode)
+    private IReadOnlyCollection<IMarketDataProvider> SelectProviders(string? marketDataSourceCode)
     {
         if (_marketDataProviders.Count == 0)
             throw new InvalidOperationException("No market data providers are registered.");
 
-        if (sourceCode is null)
+        if (marketDataSourceCode is null)
             return _marketDataProviders;
 
         IMarketDataProvider[] providers = _marketDataProviders
             .Where(provider => string.Equals(
                 provider.SourceCode,
-                sourceCode,
+                marketDataSourceCode,
                 StringComparison.OrdinalIgnoreCase))
             .ToArray();
 
         if (providers.Length == 0)
-            throw new InvalidOperationException($"Market data provider '{sourceCode}' is not registered.");
+            throw new InvalidOperationException($"Market data provider '{marketDataSourceCode}' is not registered.");
 
         return providers;
     }
