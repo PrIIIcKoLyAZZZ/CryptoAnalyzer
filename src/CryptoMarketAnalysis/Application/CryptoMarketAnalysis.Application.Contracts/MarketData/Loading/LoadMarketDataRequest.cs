@@ -4,4 +4,4 @@ public sealed record LoadMarketDataRequest(
     IReadOnlyCollection<string> Symbols,
     DateTime FromUtc,
     DateTime ToUtc,
-    string? SourceCode = null);
+    string? MarketDataSourceCode = null);
