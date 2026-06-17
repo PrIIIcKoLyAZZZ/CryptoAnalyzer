@@ -7,7 +7,6 @@ public sealed class CryptoMarketAnalysisDbContext : DbContext
 {
     public CryptoMarketAnalysisDbContext(
         DbContextOptions<CryptoMarketAnalysisDbContext> options)
-
         : base(options)
     {
     }
