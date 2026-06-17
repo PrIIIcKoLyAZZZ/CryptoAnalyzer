@@ -4,4 +4,4 @@ public sealed record HistoricalMarketDataRequest(
     string Symbol,
     DateTime FromUtc,
     DateTime ToUtc,
-    string? ExchangeCode = null);
+    string? MarketDataSourceCode = null);

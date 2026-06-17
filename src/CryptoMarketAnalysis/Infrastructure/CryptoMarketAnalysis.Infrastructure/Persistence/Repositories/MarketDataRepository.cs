@@ -18,7 +18,7 @@ public sealed class MarketDataRepository : IMarketDataRepository
         Guid assetId,
         DateTime fromUtc,
         DateTime toUtc,
-        Guid? exchangeId = null,
+        Guid? marketDataSourceId = null,
         CancellationToken cancellationToken = default)
     {
         IQueryable<MarketDataPoint> query = _dbContext.MarketDataPoints
@@ -27,47 +27,72 @@ public sealed class MarketDataRepository : IMarketDataRepository
                 point.TimestampUtc >= fromUtc &&
                 point.TimestampUtc <= toUtc);
 
-        if (exchangeId.HasValue)
-            query = query.Where(point => point.ExchangeId == exchangeId.Value);
+        if (marketDataSourceId.HasValue)
+        {
+            query = query.Where(
+                point => point.MarketDataSourceId == marketDataSourceId.Value);
+        }
 
         return await query
             .OrderBy(point => point.TimestampUtc)
             .ToListAsync(cancellationToken);
     }
 
-    public Task<MarketDataPoint?> GetLatestAsync(Guid assetId, Guid? exchangeId = null, CancellationToken cancellationToken = default)
+    public Task<MarketDataPoint?> GetLatestAsync(
+        Guid assetId,
+        Guid? marketDataSourceId = null,
+        CancellationToken cancellationToken = default)
     {
         IQueryable<MarketDataPoint> query = _dbContext.MarketDataPoints
             .Where(point => point.AssetId == assetId);
 
-        if (exchangeId.HasValue)
-            query = query.Where(point => point.ExchangeId == exchangeId.Value);
+        if (marketDataSourceId.HasValue)
+        {
+            query = query.Where(
+                point => point.MarketDataSourceId == marketDataSourceId.Value);
+        }
 
         return query
             .OrderByDescending(point => point.TimestampUtc)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public Task<bool> ExistsAsync(Guid assetId, Guid exchangeId, DateTime timestampUtc, CancellationToken cancellationToken = default)
+    public Task<bool> ExistsAsync(
+        Guid assetId,
+        Guid marketDataSourceId,
+        DateTime timestampUtc,
+        CancellationToken cancellationToken = default)
     {
         return _dbContext.MarketDataPoints.AnyAsync(
             point =>
                 point.AssetId == assetId &&
-                point.ExchangeId == exchangeId &&
+                point.MarketDataSourceId == marketDataSourceId &&
                 point.TimestampUtc == timestampUtc,
             cancellationToken);
     }
 
-    public async Task AddAsync(MarketDataPoint marketDataPoint, CancellationToken cancellationToken = default)
+    public async Task AddAsync(
+        MarketDataPoint marketDataPoint,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(marketDataPoint);
-        await _dbContext.MarketDataPoints.AddAsync(marketDataPoint, cancellationToken);
+
+        await _dbContext.MarketDataPoints.AddAsync(
+            marketDataPoint,
+            cancellationToken);
     }
 
-    public async Task AddRangeAsync(IReadOnlyCollection<MarketDataPoint> marketDataPoints, CancellationToken cancellationToken = default)
+    public async Task AddRangeAsync(
+        IReadOnlyCollection<MarketDataPoint> marketDataPoints,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(marketDataPoints);
-        if (marketDataPoints.Count == 0) return;
-        await _dbContext.MarketDataPoints.AddRangeAsync(marketDataPoints, cancellationToken);
+
+        if (marketDataPoints.Count == 0)
+            return;
+
+        await _dbContext.MarketDataPoints.AddRangeAsync(
+            marketDataPoints,
+            cancellationToken);
     }
 }

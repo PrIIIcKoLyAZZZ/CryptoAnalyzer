@@ -11,14 +11,14 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
 {
     private readonly List<IMarketDataProvider> _marketDataProviders;
     private readonly ICryptoAssetRepository _cryptoAssetRepository;
-    private readonly IExchangeRepository _exchangeRepository;
+    private readonly IMarketDataSourceRepository _marketDataSourceRepository;
     private readonly IMarketDataRepository _marketDataRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public LoadMarketDataUseCase(
         IEnumerable<IMarketDataProvider> marketDataProviders,
         ICryptoAssetRepository cryptoAssetRepository,
-        IExchangeRepository exchangeRepository,
+        IMarketDataSourceRepository marketDataSourceRepository,
         IMarketDataRepository marketDataRepository,
         IUnitOfWork unitOfWork)
     {
@@ -28,8 +28,8 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
         _cryptoAssetRepository = cryptoAssetRepository
             ?? throw new ArgumentNullException(nameof(cryptoAssetRepository));
 
-        _exchangeRepository = exchangeRepository
-            ?? throw new ArgumentNullException(nameof(exchangeRepository));
+        _marketDataSourceRepository = marketDataSourceRepository
+            ?? throw new ArgumentNullException(nameof(marketDataSourceRepository));
 
         _marketDataRepository = marketDataRepository
             ?? throw new ArgumentNullException(nameof(marketDataRepository));
@@ -198,18 +198,18 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
     {
         string sourceCode = NormalizeSourceCode(provider.SourceCode);
 
-        Exchange? exchange = await _exchangeRepository.GetByCodeAsync(
-            new ExchangeCode(sourceCode),
+        MarketDataSource? marketDataSource = await _marketDataSourceRepository.GetByCodeAsync(
+            new MarketDataSourceCode(sourceCode),
             cancellationToken);
 
-        if (exchange is null)
+        if (marketDataSource is null)
         {
             return new LoadMarketDataSymbolResult(
                 Symbol: symbol,
                 SourceCode: sourceCode,
                 LoadedPointsCount: 0,
                 SkippedDuplicatesCount: 0,
-                Error: $"Exchange/source '{sourceCode}' was not found.");
+                Error: $"MarketDataSource/source '{sourceCode}' was not found.");
         }
 
         try
@@ -227,7 +227,7 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
 
             return await SaveNewPointsAsync(
                 assetId,
-                exchange.Id,
+                marketDataSource.Id,
                 symbol,
                 sourceCode,
                 filteredPoints,
@@ -250,7 +250,7 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
 
     private async Task<LoadMarketDataSymbolResult> SaveNewPointsAsync(
         Guid assetId,
-        Guid exchangeId,
+        Guid marketDataSourceId,
         string symbol,
         string sourceCode,
         IReadOnlyCollection<MarketDataPointDto> points,
@@ -266,7 +266,7 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
 
             bool exists = await _marketDataRepository.ExistsAsync(
                 assetId,
-                exchangeId,
+                marketDataSourceId,
                 point.TimestampUtc,
                 cancellationToken);
 
@@ -278,7 +278,7 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
 
             var marketDataPoint = MarketDataPoint.Create(
                 assetId,
-                exchangeId,
+                marketDataSourceId,
                 point.TimestampUtc,
                 point.PriceUsd,
                 point.MarketCapUsd,

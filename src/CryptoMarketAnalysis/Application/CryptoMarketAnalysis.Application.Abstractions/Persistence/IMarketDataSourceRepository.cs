@@ -3,20 +3,20 @@ using CryptoMarketAnalysis.Domain.ValueObjects;
 
 namespace CryptoMarketAnalysis.Application.Abstractions.Persistence;
 
-public interface IExchangeRepository
+public interface IMarketDataSourceRepository
 {
-    Task<Exchange?> GetByIdAsync(
+    Task<MarketDataSource?> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default);
 
-    Task<Exchange?> GetByCodeAsync(
-        ExchangeCode code,
+    Task<MarketDataSource?> GetByCodeAsync(
+        MarketDataSourceCode code,
         CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyCollection<Exchange>> GetActiveAsync(
+    Task<IReadOnlyCollection<MarketDataSource>> GetActiveAsync(
         CancellationToken cancellationToken = default);
 
     Task AddAsync(
-        Exchange exchange,
+        MarketDataSource marketDataSource,
         CancellationToken cancellationToken = default);
 }

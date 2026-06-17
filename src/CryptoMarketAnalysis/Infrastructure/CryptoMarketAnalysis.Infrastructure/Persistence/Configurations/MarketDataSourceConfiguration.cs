@@ -5,42 +5,42 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CryptoMarketAnalysis.Infrastructure.Persistence.Configurations;
 
-public sealed class ExchangeConfiguration : IEntityTypeConfiguration<Exchange>
+public sealed class MarketDataSourceConfiguration : IEntityTypeConfiguration<MarketDataSource>
 {
-    public void Configure(EntityTypeBuilder<Exchange> builder)
+    public void Configure(EntityTypeBuilder<MarketDataSource> builder)
     {
-        builder.ToTable("exchanges");
+        builder.ToTable("market_data_sources");
 
-        builder.HasKey(exchange => exchange.Id);
+        builder.HasKey(marketDataSource => marketDataSource.Id);
 
-        builder.Property(exchange => exchange.Id)
+        builder.Property(marketDataSource => marketDataSource.Id)
             .HasColumnName("id")
             .ValueGeneratedNever();
 
-        builder.Property(exchange => exchange.Code)
+        builder.Property(marketDataSource => marketDataSource.Code)
             .HasColumnName("code")
             .HasConversion(
                 code => code.Value,
-                value => new ExchangeCode(value))
+                value => new MarketDataSourceCode(value))
             .HasMaxLength(50)
             .IsRequired();
 
-        builder.Property(exchange => exchange.Name)
+        builder.Property(marketDataSource => marketDataSource.Name)
             .HasColumnName("name")
             .HasMaxLength(100)
             .IsRequired();
 
-        builder.Property(exchange => exchange.IsActive)
+        builder.Property(marketDataSource => marketDataSource.IsActive)
             .HasColumnName("is_active")
             .IsRequired();
 
-        builder.Property(exchange => exchange.CreatedAtUtc)
+        builder.Property(marketDataSource => marketDataSource.CreatedAtUtc)
             .HasColumnName("created_at_utc")
             .HasColumnType("timestamp with time zone")
             .IsRequired();
 
-        builder.HasIndex(exchange => exchange.Code)
-            .HasDatabaseName("ix_exchanges_code")
+        builder.HasIndex(marketDataSource => marketDataSource.Code)
+            .HasDatabaseName("ix_market_data_sources_code")
             .IsUnique();
     }
 }

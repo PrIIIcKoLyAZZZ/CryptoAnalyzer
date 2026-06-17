@@ -14,7 +14,7 @@ public sealed class CryptoMarketAnalysisDbContext : DbContext
 
     public DbSet<CryptoAsset> CryptoAssets => Set<CryptoAsset>();
 
-    public DbSet<Exchange> Exchanges => Set<Exchange>();
+    public DbSet<MarketDataSource> MarketDataSources => Set<MarketDataSource>();
 
     public DbSet<MarketDataPoint> MarketDataPoints => Set<MarketDataPoint>();
 

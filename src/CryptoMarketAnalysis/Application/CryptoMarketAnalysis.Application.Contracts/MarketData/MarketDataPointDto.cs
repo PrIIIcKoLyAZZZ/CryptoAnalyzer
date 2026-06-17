@@ -2,7 +2,7 @@ namespace CryptoMarketAnalysis.Application.Contracts.MarketData;
 
 public sealed record MarketDataPointDto(
     Guid AssetId,
-    Guid ExchangeId,
+    Guid MarketDataSourceId,
     DateTime TimestampUtc,
     decimal PriceUsd,
     decimal? MarketCapUsd,

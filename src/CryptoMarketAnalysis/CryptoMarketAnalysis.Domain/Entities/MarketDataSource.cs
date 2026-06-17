@@ -3,9 +3,9 @@ using CryptoMarketAnalysis.Domain.ValueObjects;
 
 namespace CryptoMarketAnalysis.Domain.Entities;
 
-public sealed class Exchange : Entity
+public sealed class MarketDataSource : Entity
 {
-    public ExchangeCode Code { get; private set; }
+    public MarketDataSourceCode Code { get; private set; }
 
     public string Name { get; private set; }
 
@@ -13,16 +13,16 @@ public sealed class Exchange : Entity
 
     public DateTime CreatedAtUtc { get; private set; }
 
-    public Exchange(
+    public MarketDataSource(
         Guid id,
-        ExchangeCode code,
+        MarketDataSourceCode code,
         string name,
         DateTime createdAtUtc) : base(id)
     {
         ArgumentNullException.ThrowIfNull(code);
 
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Exchange name cannot be empty.", nameof(name));
+            throw new ArgumentException("Market data source name cannot be empty.", nameof(name));
 
         if (createdAtUtc.Kind != DateTimeKind.Utc)
             throw new ArgumentException("Created date must be in UTC.", nameof(createdAtUtc));
@@ -33,11 +33,11 @@ public sealed class Exchange : Entity
         CreatedAtUtc = createdAtUtc;
     }
 
-    public static Exchange Create(string code, string name)
+    public static MarketDataSource Create(string code, string name)
     {
-        return new Exchange(
+        return new MarketDataSource(
             Guid.NewGuid(),
-            new ExchangeCode(code),
+            new MarketDataSourceCode(code),
             name,
             DateTime.UtcNow);
     }
@@ -45,7 +45,7 @@ public sealed class Exchange : Entity
     public void Rename(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Exchange name cannot be empty.", nameof(name));
+            throw new ArgumentException("Market data source name cannot be empty.", nameof(name));
 
         Name = name.Trim();
     }
