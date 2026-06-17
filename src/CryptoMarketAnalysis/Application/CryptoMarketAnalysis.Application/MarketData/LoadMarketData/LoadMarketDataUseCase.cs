@@ -124,7 +124,7 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
         {
             results.Add(new LoadMarketDataSymbolResult(
                 Symbol: symbol,
-                SourceCode: provider.SourceCode,
+                MarketDataSourceCode: provider.SourceCode,
                 LoadedPointsCount: 0,
                 SkippedDuplicatesCount: 0,
                 Error: $"Asset '{symbol}' was not found."));
@@ -167,6 +167,14 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
             .ToList();
     }
 
+    private static List<MarketDataPointDto> FilterUtcPoints(
+        IReadOnlyCollection<MarketDataPointDto> points)
+    {
+        return points
+            .Where(point => point.TimestampUtc.Kind == DateTimeKind.Utc)
+            .ToList();
+    }
+
     private IReadOnlyCollection<IMarketDataProvider> SelectProviders(string? sourceCode)
     {
         if (_marketDataProviders.Count == 0)
@@ -189,64 +197,77 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
     }
 
     private async Task<LoadMarketDataSymbolResult> LoadForSymbolAndProviderAsync(
-        Guid assetId,
-        string symbol,
-        IMarketDataProvider provider,
-        DateTime fromUtc,
-        DateTime toUtc,
-        CancellationToken cancellationToken)
-    {
-        string sourceCode = NormalizeSourceCode(provider.SourceCode);
+    Guid assetId,
+    string symbol,
+    IMarketDataProvider provider,
+    DateTime fromUtc,
+    DateTime toUtc,
+    CancellationToken cancellationToken)
+{
+    string marketDataSourceCode = NormalizeSourceCode(provider.SourceCode);
 
-        MarketDataSource? marketDataSource = await _marketDataSourceRepository.GetByCodeAsync(
-            new MarketDataSourceCode(sourceCode),
+    MarketDataSource? marketDataSource = await _marketDataSourceRepository.GetByCodeAsync(
+        new MarketDataSourceCode(marketDataSourceCode),
+        cancellationToken);
+
+    if (marketDataSource is null)
+    {
+        return new LoadMarketDataSymbolResult(
+            Symbol: symbol,
+            MarketDataSourceCode: marketDataSourceCode,
+            LoadedPointsCount: 0,
+            SkippedDuplicatesCount: 0,
+            Error: $"Market data source '{marketDataSourceCode}' was not found.");
+    }
+
+    try
+    {
+        IReadOnlyCollection<MarketDataPointDto> points = await provider.GetHistoricalAsync(
+            symbol,
+            fromUtc,
+            toUtc,
             cancellationToken);
 
-        if (marketDataSource is null)
+        List<MarketDataPointDto> filteredPoints = FilterPointsByPeriod(
+            points,
+            fromUtc,
+            toUtc);
+
+        List<MarketDataPointDto> validUtcPoints = FilterUtcPoints(
+            filteredPoints);
+
+        if (validUtcPoints.Count != filteredPoints.Count)
         {
             return new LoadMarketDataSymbolResult(
                 Symbol: symbol,
-                SourceCode: sourceCode,
+                MarketDataSourceCode: marketDataSourceCode,
                 LoadedPointsCount: 0,
                 SkippedDuplicatesCount: 0,
-                Error: $"MarketDataSource/source '{sourceCode}' was not found.");
+                Error: $"Provider {marketDataSourceCode} returned market data point with non-UTC timestamp for symbol {symbol}.");
         }
 
-        try
-        {
-            IReadOnlyCollection<MarketDataPointDto> points = await provider.GetHistoricalAsync(
-                symbol,
-                fromUtc,
-                toUtc,
-                cancellationToken);
-
-            IReadOnlyCollection<MarketDataPointDto> filteredPoints = FilterPointsByPeriod(
-                points,
-                fromUtc,
-                toUtc);
-
-            return await SaveNewPointsAsync(
-                assetId,
-                marketDataSource.Id,
-                symbol,
-                sourceCode,
-                filteredPoints,
-                cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception exception)
-        {
-            return new LoadMarketDataSymbolResult(
-                Symbol: symbol,
-                SourceCode: sourceCode,
-                LoadedPointsCount: 0,
-                SkippedDuplicatesCount: 0,
-                Error: exception.Message);
-        }
+        return await SaveNewPointsAsync(
+            assetId,
+            marketDataSource.Id,
+            symbol,
+            marketDataSourceCode,
+            validUtcPoints,
+            cancellationToken);
     }
+    catch (OperationCanceledException)
+    {
+        throw;
+    }
+    catch (Exception exception)
+    {
+        return new LoadMarketDataSymbolResult(
+            Symbol: symbol,
+            MarketDataSourceCode: marketDataSourceCode,
+            LoadedPointsCount: 0,
+            SkippedDuplicatesCount: 0,
+            Error: exception.Message);
+    }
+}
 
     private async Task<LoadMarketDataSymbolResult> SaveNewPointsAsync(
         Guid assetId,
@@ -297,7 +318,7 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
 
         return new LoadMarketDataSymbolResult(
             Symbol: symbol,
-            SourceCode: sourceCode,
+            MarketDataSourceCode: sourceCode,
             LoadedPointsCount: loadedPointsCount,
             SkippedDuplicatesCount: skippedDuplicatesCount,
             Error: null);
