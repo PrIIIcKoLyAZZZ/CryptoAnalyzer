@@ -11,7 +11,7 @@ public static class MarketDataMappings
 
         return new MarketDataPointDto(
             AssetId: point.AssetId,
-            ExchangeId: point.ExchangeId,
+            MarketDataSourceId: point.MarketDataSourceId,
             TimestampUtc: point.TimestampUtc,
             PriceUsd: point.PriceUsd,
             MarketCapUsd: point.MarketCapUsd,

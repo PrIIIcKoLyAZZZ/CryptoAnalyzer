@@ -8,17 +8,17 @@ public interface IMarketDataRepository
         Guid assetId,
         DateTime fromUtc,
         DateTime toUtc,
-        Guid? exchangeId = null,
+        Guid? marketDataSourceId = null,
         CancellationToken cancellationToken = default);
 
     Task<MarketDataPoint?> GetLatestAsync(
         Guid assetId,
-        Guid? exchangeId = null,
+        Guid? marketDataSourceId = null,
         CancellationToken cancellationToken = default);
 
     Task<bool> ExistsAsync(
         Guid assetId,
-        Guid exchangeId,
+        Guid marketDataSourceId,
         DateTime timestampUtc,
         CancellationToken cancellationToken = default);
 

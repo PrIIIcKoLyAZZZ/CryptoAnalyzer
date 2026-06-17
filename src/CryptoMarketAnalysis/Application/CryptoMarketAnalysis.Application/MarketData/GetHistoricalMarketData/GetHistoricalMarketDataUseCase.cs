@@ -10,19 +10,19 @@ namespace CryptoMarketAnalysis.Application.MarketData.GetHistoricalMarketData;
 public sealed class GetHistoricalMarketDataUseCase : IGetHistoricalMarketDataUseCase
 {
     private readonly ICryptoAssetRepository _cryptoAssetRepository;
-    private readonly IExchangeRepository _exchangeRepository;
+    private readonly IMarketDataSourceRepository _marketDataSourceRepository;
     private readonly IMarketDataRepository _marketDataRepository;
 
     public GetHistoricalMarketDataUseCase(
         ICryptoAssetRepository cryptoAssetRepository,
-        IExchangeRepository exchangeRepository,
+        IMarketDataSourceRepository marketDataSourceRepository,
         IMarketDataRepository marketDataRepository)
     {
         _cryptoAssetRepository = cryptoAssetRepository
             ?? throw new ArgumentNullException(nameof(cryptoAssetRepository));
 
-        _exchangeRepository = exchangeRepository
-            ?? throw new ArgumentNullException(nameof(exchangeRepository));
+        _marketDataSourceRepository = marketDataSourceRepository
+            ?? throw new ArgumentNullException(nameof(marketDataSourceRepository));
 
         _marketDataRepository = marketDataRepository
             ?? throw new ArgumentNullException(nameof(marketDataRepository));
@@ -36,26 +36,26 @@ public sealed class GetHistoricalMarketDataUseCase : IGetHistoricalMarketDataUse
 
         var symbol = new AssetSymbol(request.Symbol);
 
-        Guid? exchangeId = null;
-        string? normalizedExchangeCode = null;
+        Guid? marketDataSourceId = null;
+        string? normalizedMarketDataSourceCode = null;
 
-        if (request.ExchangeCode is not null)
+        if (request.MarketDataSourceCode is not null)
         {
-            var exchangeCode = new ExchangeCode(request.ExchangeCode);
-            normalizedExchangeCode = exchangeCode.Value;
+            var marketDataSourceCode = new MarketDataSourceCode(request.MarketDataSourceCode);
+            normalizedMarketDataSourceCode = marketDataSourceCode.Value;
 
-            Exchange? exchange = await _exchangeRepository.GetByCodeAsync(
-                exchangeCode,
+            MarketDataSource? marketDataSource = await _marketDataSourceRepository.GetByCodeAsync(
+                marketDataSourceCode,
                 cancellationToken);
 
-            if (exchange is null)
+            if (marketDataSource is null)
             {
                 return CreateEmptyResponse(
                     symbol.Value,
-                    normalizedExchangeCode);
+                    normalizedMarketDataSourceCode);
             }
 
-            exchangeId = exchange.Id;
+            marketDataSourceId = marketDataSource.Id;
         }
 
         CryptoAsset? asset = await _cryptoAssetRepository.GetBySymbolAsync(
@@ -66,7 +66,7 @@ public sealed class GetHistoricalMarketDataUseCase : IGetHistoricalMarketDataUse
         {
             return CreateEmptyResponse(
                 symbol.Value,
-                normalizedExchangeCode);
+                normalizedMarketDataSourceCode);
         }
 
         IReadOnlyCollection<MarketDataPoint> points =
@@ -74,7 +74,7 @@ public sealed class GetHistoricalMarketDataUseCase : IGetHistoricalMarketDataUse
                 asset.Id,
                 request.FromUtc,
                 request.ToUtc,
-                exchangeId,
+                marketDataSourceId,
                 cancellationToken);
 
         MarketDataPointDto[] pointDtos = points
@@ -84,7 +84,7 @@ public sealed class GetHistoricalMarketDataUseCase : IGetHistoricalMarketDataUse
 
         return new HistoricalMarketDataResponse(
             Symbol: symbol.Value,
-            ExchangeCode: normalizedExchangeCode,
+            MarketDataSourceCode: normalizedMarketDataSourceCode,
             Points: pointDtos);
     }
 
@@ -104,17 +104,17 @@ public sealed class GetHistoricalMarketDataUseCase : IGetHistoricalMarketDataUse
         if (request.FromUtc >= request.ToUtc)
             throw new ArgumentException("From date must be earlier than to date.", nameof(request));
 
-        if (request.ExchangeCode is not null && string.IsNullOrWhiteSpace(request.ExchangeCode))
-            throw new ArgumentException("Exchange code cannot be empty.", nameof(request));
+        if (request.MarketDataSourceCode is not null && string.IsNullOrWhiteSpace(request.MarketDataSourceCode))
+            throw new ArgumentException("Market data source code cannot be empty.", nameof(request));
     }
 
     private static HistoricalMarketDataResponse CreateEmptyResponse(
         string symbol,
-        string? exchangeCode)
+        string? marketDataSourceCode)
     {
         return new HistoricalMarketDataResponse(
             Symbol: symbol,
-            ExchangeCode: exchangeCode,
+            MarketDataSourceCode: marketDataSourceCode,
             Points: Array.Empty<MarketDataPointDto>());
     }
 }

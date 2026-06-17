@@ -20,8 +20,8 @@ public sealed class MarketDataPointConfiguration : IEntityTypeConfiguration<Mark
             .HasColumnName("asset_id")
             .IsRequired();
 
-        builder.Property(point => point.ExchangeId)
-            .HasColumnName("exchange_id")
+        builder.Property(point => point.MarketDataSourceId)
+            .HasColumnName("market_data_source_id")
             .IsRequired();
 
         builder.Property(point => point.TimestampUtc)
@@ -56,18 +56,18 @@ public sealed class MarketDataPointConfiguration : IEntityTypeConfiguration<Mark
 
         builder.HasIndex(point => new
             {
-                point.ExchangeId,
+                point.MarketDataSourceId,
                 point.TimestampUtc,
             })
-            .HasDatabaseName("ix_market_data_points_exchange_id_timestamp_utc");
+            .HasDatabaseName("ix_market_data_points_market_data_source_id_timestamp_utc");
 
         builder.HasIndex(point => new
             {
                 point.AssetId,
-                point.ExchangeId,
+                point.MarketDataSourceId,
                 point.TimestampUtc,
             })
-            .HasDatabaseName("ux_market_data_points_asset_id_exchange_id_timestamp_utc")
+            .HasDatabaseName("ux_market_data_points_asset_id_market_data_source_id_timestamp_utc")
             .IsUnique();
 
         builder.HasOne<CryptoAsset>()
@@ -75,9 +75,9 @@ public sealed class MarketDataPointConfiguration : IEntityTypeConfiguration<Mark
             .HasForeignKey(point => point.AssetId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<Exchange>()
+        builder.HasOne<MarketDataSource>()
             .WithMany()
-            .HasForeignKey(point => point.ExchangeId)
+            .HasForeignKey(point => point.MarketDataSourceId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
