@@ -6,7 +6,7 @@ public sealed class MarketDataPoint : Entity
 {
     public Guid AssetId { get; private set; }
 
-    public Guid ExchangeId { get; private set; }
+    public Guid MarketDataSourceId { get; private set; }
 
     public DateTime TimestampUtc { get; private set; }
 
@@ -21,7 +21,7 @@ public sealed class MarketDataPoint : Entity
     public MarketDataPoint(
         Guid id,
         Guid assetId,
-        Guid exchangeId,
+        Guid marketDataSourceId,
         DateTime timestampUtc,
         decimal priceUsd,
         decimal? marketCapUsd,
@@ -31,8 +31,8 @@ public sealed class MarketDataPoint : Entity
         if (assetId == Guid.Empty)
             throw new ArgumentException("Asset id cannot be empty.", nameof(assetId));
 
-        if (exchangeId == Guid.Empty)
-            throw new ArgumentException("Exchange id cannot be empty.", nameof(exchangeId));
+        if (marketDataSourceId == Guid.Empty)
+            throw new ArgumentException("Market data source id cannot be empty.", nameof(marketDataSourceId));
 
         if (timestampUtc.Kind != DateTimeKind.Utc)
             throw new ArgumentException("Timestamp must be in UTC.", nameof(timestampUtc));
@@ -50,7 +50,7 @@ public sealed class MarketDataPoint : Entity
             throw new ArgumentException("Created date must be in UTC.", nameof(createdAtUtc));
 
         AssetId = assetId;
-        ExchangeId = exchangeId;
+        MarketDataSourceId = marketDataSourceId;
         TimestampUtc = timestampUtc;
         PriceUsd = priceUsd;
         MarketCapUsd = marketCapUsd;
@@ -60,7 +60,7 @@ public sealed class MarketDataPoint : Entity
 
     public static MarketDataPoint Create(
         Guid assetId,
-        Guid exchangeId,
+        Guid marketDataSourceId,
         DateTime timestampUtc,
         decimal priceUsd,
         decimal? marketCapUsd = null,
@@ -69,7 +69,7 @@ public sealed class MarketDataPoint : Entity
         return new MarketDataPoint(
             Guid.NewGuid(),
             assetId,
-            exchangeId,
+            marketDataSourceId,
             timestampUtc,
             priceUsd,
             marketCapUsd,
