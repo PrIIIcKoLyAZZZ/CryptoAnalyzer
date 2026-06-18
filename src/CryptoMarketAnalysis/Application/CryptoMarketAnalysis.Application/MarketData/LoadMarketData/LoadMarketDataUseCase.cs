@@ -45,6 +45,10 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
         ValidateRequest(request);
 
         IReadOnlyCollection<IMarketDataProvider> providers = SelectProviders(request.MarketDataSourceCode);
+        if (providers.Count == 0)
+        {
+            return CreateFailedProviderResponse(request);
+        }
 
         var results = new List<LoadMarketDataSymbolResult>();
 
@@ -175,11 +179,32 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
             .ToList();
     }
 
+    private static LoadMarketDataResponse CreateFailedProviderResponse(
+        LoadMarketDataRequest request)
+    {
+        IReadOnlyCollection<LoadMarketDataSymbolResult> results = request.Symbols
+            .Select(symbol => new LoadMarketDataSymbolResult(
+                Symbol: symbol,
+                MarketDataSourceCode: request.MarketDataSourceCode ?? string.Empty,
+                LoadedPointsCount: 0,
+                SkippedDuplicatesCount: 0,
+                Error: request.MarketDataSourceCode is not null ? $"Market data provider '{request.MarketDataSourceCode}' was not found." : "No market data providers are registered."))
+            .ToList();
+
+        return new LoadMarketDataResponse(
+            Status: LoadMarketDataStatus.Failed,
+            RequestedSymbolsCount: request.Symbols.Count,
+            LoadedPointsCount: 0,
+            SkippedDuplicatesCount: 0,
+            Results: results);
+    }
+
     private IReadOnlyCollection<IMarketDataProvider> SelectProviders(string? marketDataSourceCode)
     {
         if (_marketDataProviders.Count == 0)
-            throw new InvalidOperationException("No market data providers are registered.");
+            return Array.Empty<IMarketDataProvider>();
 
+            // throw new InvalidOperationException("No market data providers are registered.");
         if (marketDataSourceCode is null)
             return _marketDataProviders;
 
@@ -190,9 +215,8 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
                 StringComparison.OrdinalIgnoreCase))
             .ToArray();
 
-        if (providers.Length == 0)
-            throw new InvalidOperationException($"Market data provider '{marketDataSourceCode}' is not registered.");
-
+        // if (providers.Length == 0)
+           // throw new InvalidOperationException($"Market data provider '{marketDataSourceCode}' is not registered.");
         return providers;
     }
 

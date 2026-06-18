@@ -1,3 +1,4 @@
+using CryptoMarketAnalysis.Api.Endpoints;
 using CryptoMarketAnalysis.Application;
 using CryptoMarketAnalysis.Infrastructure;
 using CryptoMarketAnalysis.Infrastructure.Persistence;
@@ -32,6 +33,10 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.MapAssetEndpoints();
+app.MapMarketDataSourceEndpoints();
+app.MapMarketDataEndpoints();
 
 app.MapControllers();
 
