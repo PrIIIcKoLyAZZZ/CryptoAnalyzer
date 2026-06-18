@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: crypto_market_analysis_postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: crypto_market_analysis
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    ports:
+      - "5434:5432"
+
+    volumes:
+      - crypto_market_analysis_postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d crypto_market_analysis"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  crypto_market_analysis_postgres_data:
