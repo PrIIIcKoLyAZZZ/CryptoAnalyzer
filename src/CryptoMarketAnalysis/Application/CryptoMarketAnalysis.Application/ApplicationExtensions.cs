@@ -1,5 +1,6 @@
 using CryptoMarketAnalysis.Application.Contracts.MarketData.Historical;
 using CryptoMarketAnalysis.Application.Contracts.MarketData.Loading;
+using CryptoMarketAnalysis.Application.MarketData.GetHistoricalMarketData;
 using CryptoMarketAnalysis.Application.MarketData.LoadMarketData;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,7 +11,7 @@ public static class ApplicationExtensions
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddScoped<ILoadMarketDataUseCase, LoadMarketDataUseCase>();
-        services.AddScoped<IGetHistoricalMarketDataUseCase, IGetHistoricalMarketDataUseCase>();
+        services.AddScoped<IGetHistoricalMarketDataUseCase, GetHistoricalMarketDataUseCase>();
 
         return services;
     }
