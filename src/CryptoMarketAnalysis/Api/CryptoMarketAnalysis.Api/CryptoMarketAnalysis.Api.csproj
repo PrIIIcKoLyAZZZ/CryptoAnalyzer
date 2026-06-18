@@ -56,4 +56,17 @@
       <_ContentIncludedByDefault Remove="wwwroot\lib\bootstrap\dist\js\bootstrap.min.js.map" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\Application\CryptoMarketAnalysis.Application\CryptoMarketAnalysis.Application.csproj" />
+      <ProjectReference Include="..\..\Infrastructure\CryptoMarketAnalysis.Infrastructure\CryptoMarketAnalysis.Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+      <PackageReference Include="Swashbuckle.AspNetCore" />
+    </ItemGroup>
+
 </Project>

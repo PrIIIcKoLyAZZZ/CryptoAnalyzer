@@ -59,6 +59,9 @@ public static class DatabaseSeeder
             assetSymbol.Value,
             name);
 
+        // TODO
+        Console.WriteLine($"Seeding asset {cryptoAsset.Symbol.Value} with id {cryptoAsset.Id}");
+
         await dbContext.CryptoAssets.AddAsync(
             cryptoAsset,
             cancellationToken);

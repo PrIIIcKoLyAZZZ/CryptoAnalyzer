@@ -22,7 +22,7 @@ public sealed class CryptoAsset : Entity
         ArgumentNullException.ThrowIfNull(symbol);
 
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Asset name cannot be empty.", nameof(name));
+            throw new ArgumentException("Crypto asset name cannot be empty.", nameof(name));
 
         if (createdAtUtc.Kind != DateTimeKind.Utc)
             throw new ArgumentException("Created date must be in UTC.", nameof(createdAtUtc));
@@ -45,7 +45,7 @@ public sealed class CryptoAsset : Entity
     public void Rename(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Asset name cannot be empty.", nameof(name));
+            throw new ArgumentException("Crypto asset name cannot be empty.", nameof(name));
 
         Name = name.Trim();
     }
