@@ -1,4 +1,6 @@
+using CryptoMarketAnalysis.Application.Abstractions.MarketData;
 using CryptoMarketAnalysis.Application.Abstractions.Persistence;
+using CryptoMarketAnalysis.Infrastructure.MarketData.CoinGecko;
 using CryptoMarketAnalysis.Infrastructure.Persistence;
 using CryptoMarketAnalysis.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +31,11 @@ public static class InfrastructureExtensions
         services.AddScoped<IMarketDataSourceRepository, MarketDataSourceRepository>();
         services.AddScoped<IMarketDataRepository, MarketDataRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        services.Configure<CoinGeckoOptions>(
+            configuration.GetSection("MarketDataProviders:CoinGecko"));
+
+        services.AddHttpClient<IMarketDataProvider, CoinGeckoMarketDataProvider>();
 
         return services;
     }

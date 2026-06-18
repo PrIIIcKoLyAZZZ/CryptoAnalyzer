@@ -1,6 +1,6 @@
 using CryptoMarketAnalysis.Application.Abstractions.MarketData;
 using CryptoMarketAnalysis.Application.Abstractions.Persistence;
-using CryptoMarketAnalysis.Application.Contracts.MarketData;
+using CryptoMarketAnalysis.Application.Contracts.MarketData.External;
 using CryptoMarketAnalysis.Application.Contracts.MarketData.Loading;
 using CryptoMarketAnalysis.Domain.Entities;
 using CryptoMarketAnalysis.Domain.ValueObjects;
@@ -161,8 +161,8 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
         return LoadMarketDataStatus.Failed;
     }
 
-    private static List<MarketDataPointDto> FilterPointsByPeriod(
-        IReadOnlyCollection<MarketDataPointDto> points,
+    private static List<ExternalMarketDataPointDto> FilterPointsByPeriod(
+        IReadOnlyCollection<ExternalMarketDataPointDto> points,
         DateTime fromUtc,
         DateTime toUtc)
     {
@@ -171,8 +171,8 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
             .ToList();
     }
 
-    private static List<MarketDataPointDto> FilterUtcPoints(
-        IReadOnlyCollection<MarketDataPointDto> points)
+    private static List<ExternalMarketDataPointDto> FilterUtcPoints(
+        IReadOnlyCollection<ExternalMarketDataPointDto> points)
     {
         return points
             .Where(point => point.TimestampUtc.Kind == DateTimeKind.Utc)
@@ -246,18 +246,18 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
 
     try
     {
-        IReadOnlyCollection<MarketDataPointDto> points = await provider.GetHistoricalAsync(
+        IReadOnlyCollection<ExternalMarketDataPointDto> points = await provider.GetHistoricalAsync(
             symbol,
             fromUtc,
             toUtc,
             cancellationToken);
 
-        List<MarketDataPointDto> filteredPoints = FilterPointsByPeriod(
+        List<ExternalMarketDataPointDto> filteredPoints = FilterPointsByPeriod(
             points,
             fromUtc,
             toUtc);
 
-        List<MarketDataPointDto> validUtcPoints = FilterUtcPoints(
+        List<ExternalMarketDataPointDto> validUtcPoints = FilterUtcPoints(
             filteredPoints);
 
         if (validUtcPoints.Count != filteredPoints.Count)
@@ -297,18 +297,15 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
         Guid assetId,
         Guid marketDataSourceId,
         string symbol,
-        string sourceCode,
-        IReadOnlyCollection<MarketDataPointDto> points,
+        string marketDataSourceCode,
+        IReadOnlyCollection<ExternalMarketDataPointDto> points,
         CancellationToken cancellationToken)
     {
-        int loadedPointsCount = 0;
+        var marketDataPoints = new List<MarketDataPoint>();
         int skippedDuplicatesCount = 0;
-        var pointsToAdd = new List<MarketDataPoint>();
 
-        foreach (MarketDataPointDto point in points)
+        foreach (ExternalMarketDataPointDto point in points)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             bool exists = await _marketDataRepository.ExistsAsync(
                 assetId,
                 marketDataSourceId,
@@ -329,21 +326,20 @@ public sealed class LoadMarketDataUseCase : ILoadMarketDataUseCase
                 point.MarketCapUsd,
                 point.Volume24hUsd);
 
-            pointsToAdd.Add(marketDataPoint);
-            loadedPointsCount++;
+            marketDataPoints.Add(marketDataPoint);
         }
 
-        if (pointsToAdd.Count > 0)
+        if (marketDataPoints.Count > 0)
         {
             await _marketDataRepository.AddRangeAsync(
-                pointsToAdd,
+                marketDataPoints,
                 cancellationToken);
         }
 
         return new LoadMarketDataSymbolResult(
             Symbol: symbol,
-            MarketDataSourceCode: sourceCode,
-            LoadedPointsCount: loadedPointsCount,
+            MarketDataSourceCode: marketDataSourceCode,
+            LoadedPointsCount: marketDataPoints.Count,
             SkippedDuplicatesCount: skippedDuplicatesCount,
             Error: null);
     }
