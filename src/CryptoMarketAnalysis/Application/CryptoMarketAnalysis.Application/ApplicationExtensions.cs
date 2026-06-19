@@ -1,4 +1,6 @@
+using CryptoMarketAnalysis.Application.Analytics.PriceChange;
 using CryptoMarketAnalysis.Application.Assets.GetCryptoAssets;
+using CryptoMarketAnalysis.Application.Contracts.Analytics;
 using CryptoMarketAnalysis.Application.Contracts.Assets;
 using CryptoMarketAnalysis.Application.Contracts.MarketData.Historical;
 using CryptoMarketAnalysis.Application.Contracts.MarketData.Loading;
@@ -19,6 +21,8 @@ public static class ApplicationExtensions
 
         services.AddScoped<IGetCryptoAssetsUseCase, GetCryptoAssetsUseCase>();
         services.AddScoped<IGetMarketDataSourcesUseCase, GetMarketDataSourcesUseCase>();
+
+        services.AddScoped<IAnalyzePriceChangeUseCase, PriceChangeAnalysisUseCase>();
 
         return services;
     }
