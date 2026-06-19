@@ -1,28 +1,16 @@
-using CryptoMarketAnalysis.Api.Endpoints;
+using CryptoMarketAnalysis.Api;
 using CryptoMarketAnalysis.Application;
 using CryptoMarketAnalysis.Infrastructure;
-using CryptoMarketAnalysis.Infrastructure.Persistence;
-using CryptoMarketAnalysis.Infrastructure.Persistence.Seed;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
-
-builder.Services.AddControllers();
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddApiPresentation();
 
 WebApplication app = builder.Build();
 
-using (IServiceScope scope = app.Services.CreateScope())
-{
-    CryptoMarketAnalysisDbContext dbContext =
-        scope.ServiceProvider.GetRequiredService<CryptoMarketAnalysisDbContext>();
-
-    await DatabaseSeeder.SeedAsync(dbContext);
-}
+await app.SeedDatabaseAsync();
 
 if (app.Environment.IsDevelopment())
 {
@@ -34,10 +22,6 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.MapAssetEndpoints();
-app.MapMarketDataSourceEndpoints();
-app.MapMarketDataEndpoints();
-
-app.MapControllers();
+app.MapApiEndpoints();
 
 await app.RunAsync();
