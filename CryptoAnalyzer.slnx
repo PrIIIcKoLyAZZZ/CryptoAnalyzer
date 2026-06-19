@@ -15,5 +15,8 @@
   <Folder Name="/src/CryptoMarketAnalysis/Infrastructure/">
     <Project Path="src/CryptoMarketAnalysis/Infrastructure/CryptoMarketAnalysis.Infrastructure/CryptoMarketAnalysis.Infrastructure.csproj" />
   </Folder>
-  <Folder Name="/tests/" />
+  <Folder Name="/tests/">
+    <Project Path="tests/CryptoMarketAnalysis.Application.Tests/CryptoMarketAnalysis.Application.Tests.csproj" />
+    <Project Path="tests/CryptoMarketAnalysis.Infrastructure.Tests/CryptoMarketAnalysis.Infrastructure.Tests.csproj" />
+  </Folder>
 </Solution>
