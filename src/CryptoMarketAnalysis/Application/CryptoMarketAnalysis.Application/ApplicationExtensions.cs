@@ -1,4 +1,6 @@
+using CryptoMarketAnalysis.Application.Analytics.Correlation;
 using CryptoMarketAnalysis.Application.Analytics.PriceChange;
+using CryptoMarketAnalysis.Application.Analytics.Volatility;
 using CryptoMarketAnalysis.Application.Assets.GetCryptoAssets;
 using CryptoMarketAnalysis.Application.Contracts.Analytics;
 using CryptoMarketAnalysis.Application.Contracts.Assets;
@@ -23,6 +25,10 @@ public static class ApplicationExtensions
         services.AddScoped<IGetMarketDataSourcesUseCase, GetMarketDataSourcesUseCase>();
 
         services.AddScoped<IAnalyzePriceChangeUseCase, PriceChangeAnalysisUseCase>();
+
+        services.AddScoped<ICalculateVolatilityUseCase, VolatilityAnalysisUseCase>();
+
+        services.AddScoped<ICalculateCorrelationUseCase, CorrelationAnalysisUseCase>();
 
         return services;
     }

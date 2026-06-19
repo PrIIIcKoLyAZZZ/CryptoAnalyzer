@@ -36,6 +36,7 @@ public static class ApiExtensions
         app.MapAssetEndpoints();
         app.MapMarketDataSourceEndpoints();
         app.MapMarketDataEndpoints();
+        app.MapAnalyticsEndpoints();
 
         app.MapControllers();
 
