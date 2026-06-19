@@ -1,11 +1,13 @@
 using CryptoMarketAnalysis.Application.Abstractions.MarketData;
 using CryptoMarketAnalysis.Application.Abstractions.Persistence;
+using CryptoMarketAnalysis.Infrastructure.MarketData.Binance;
 using CryptoMarketAnalysis.Infrastructure.MarketData.CoinGecko;
 using CryptoMarketAnalysis.Infrastructure.Persistence;
 using CryptoMarketAnalysis.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace CryptoMarketAnalysis.Infrastructure;
 
@@ -36,6 +38,23 @@ public static class InfrastructureExtensions
             configuration.GetSection("MarketDataProviders:CoinGecko"));
 
         services.AddHttpClient<IMarketDataProvider, CoinGeckoMarketDataProvider>();
+
+        services.Configure<BinanceOptions>(
+            configuration.GetSection("MarketDataProviders:Binance"));
+
+        services.AddSingleton<BinanceSymbolMapper>();
+
+        services.AddHttpClient<BinanceMarketDataProvider>((serviceProvider, client) =>
+        {
+            BinanceOptions options = serviceProvider
+                .GetRequiredService<IOptions<BinanceOptions>>()
+                .Value;
+
+            client.BaseAddress = new Uri(options.BaseUrl);
+        });
+
+        services.AddScoped<IMarketDataProvider>(serviceProvider =>
+            serviceProvider.GetRequiredService<BinanceMarketDataProvider>());
 
         return services;
     }
