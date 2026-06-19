@@ -9,4 +9,10 @@ public sealed class CoinGeckoOptions
     public string VsCurrency { get; init; } = "usd";
 
     public string Interval { get; init; } = "daily";
+
+    public int MaxAttempts { get; init; } = 3;
+
+    public int BaseRetryDelaySeconds { get; init; } = 1;
+
+    public int MinRequestIntervalMilliseconds { get; init; } = 800;
 }
