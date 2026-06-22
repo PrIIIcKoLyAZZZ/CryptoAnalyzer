@@ -7,9 +7,11 @@ using CryptoMarketAnalysis.Application.Contracts.Assets;
 using CryptoMarketAnalysis.Application.Contracts.MarketData.Historical;
 using CryptoMarketAnalysis.Application.Contracts.MarketData.Loading;
 using CryptoMarketAnalysis.Application.Contracts.MarketDataSources;
+using CryptoMarketAnalysis.Application.Contracts.Reports;
 using CryptoMarketAnalysis.Application.MarketData.GetHistoricalMarketData;
 using CryptoMarketAnalysis.Application.MarketData.LoadMarketData;
 using CryptoMarketAnalysis.Application.MarketDataSources.GetMarketDataSources;
+using CryptoMarketAnalysis.Application.Reports;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CryptoMarketAnalysis.Application;
@@ -29,6 +31,8 @@ public static class ApplicationExtensions
         services.AddScoped<ICalculateVolatilityUseCase, VolatilityAnalysisUseCase>();
 
         services.AddScoped<ICalculateCorrelationUseCase, CorrelationAnalysisUseCase>();
+
+        services.AddScoped<IGenerateMarketAnalysisReportUseCase, GenerateMarketAnalysisReportUseCase>();
 
         return services;
     }
