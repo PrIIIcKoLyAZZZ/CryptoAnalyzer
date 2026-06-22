@@ -12,6 +12,9 @@
     <Project Path="src/CryptoMarketAnalysis/Application/CryptoMarketAnalysis.Application.Contracts/CryptoMarketAnalysis.Application.Contracts.csproj" />
     <Project Path="src/CryptoMarketAnalysis/Application/CryptoMarketAnalysis.Application/CryptoMarketAnalysis.Application.csproj" />
   </Folder>
+  <Folder Name="/src/CryptoMarketAnalysis/Cli/">
+    <Project Path="src/CryptoMarketAnalysis/Cli/CryptoMarketAnalysis.Cli/CryptoMarketAnalysis.Cli.csproj" />
+  </Folder>
   <Folder Name="/src/CryptoMarketAnalysis/Infrastructure/">
     <Project Path="src/CryptoMarketAnalysis/Infrastructure/CryptoMarketAnalysis.Infrastructure/CryptoMarketAnalysis.Infrastructure.csproj" />
   </Folder>
