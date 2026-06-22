@@ -1,9 +1,11 @@
 using CryptoMarketAnalysis.Application.Abstractions.MarketData;
 using CryptoMarketAnalysis.Application.Abstractions.Persistence;
+using CryptoMarketAnalysis.Application.Abstractions.Reports;
 using CryptoMarketAnalysis.Infrastructure.MarketData.Binance;
 using CryptoMarketAnalysis.Infrastructure.MarketData.CoinGecko;
 using CryptoMarketAnalysis.Infrastructure.Persistence;
 using CryptoMarketAnalysis.Infrastructure.Persistence.Repositories;
+using CryptoMarketAnalysis.Infrastructure.Reports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,6 +57,8 @@ public static class InfrastructureExtensions
 
         services.AddScoped<IMarketDataProvider>(serviceProvider =>
             serviceProvider.GetRequiredService<BinanceMarketDataProvider>());
+
+        services.AddScoped<IPdfReportGenerator, PdfReportGenerator>();
 
         return services;
     }
