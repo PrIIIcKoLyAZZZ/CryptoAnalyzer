@@ -1,9 +1,8 @@
-using CryptoMarketAnalysis.Api.Endpoints;
 using CryptoMarketAnalysis.Infrastructure.Persistence;
 using CryptoMarketAnalysis.Infrastructure.Persistence.Seed;
 using System.Text.Json.Serialization;
 
-namespace CryptoMarketAnalysis.Api;
+namespace CryptoMarketAnalysis.Api.Extensions;
 
 public static class ApiExtensions
 {
@@ -33,13 +32,7 @@ public static class ApiExtensions
     public static IEndpointRouteBuilder MapApiEndpoints(
         this IEndpointRouteBuilder app)
     {
-        app.MapAssetEndpoints();
-        app.MapMarketDataSourceEndpoints();
-        app.MapMarketDataEndpoints();
-        app.MapAnalyticsEndpoints();
-
         app.MapControllers();
-
         return app;
     }
 

@@ -1,4 +1,4 @@
-using CryptoMarketAnalysis.Api;
+using CryptoMarketAnalysis.Api.Extensions;
 using CryptoMarketAnalysis.Application;
 using CryptoMarketAnalysis.Infrastructure;
 
@@ -11,6 +11,8 @@ builder.Services.AddApiPresentation();
 WebApplication app = builder.Build();
 
 await app.SeedDatabaseAsync();
+
+app.UseApiExceptionHandling();
 
 if (app.Environment.IsDevelopment())
 {
