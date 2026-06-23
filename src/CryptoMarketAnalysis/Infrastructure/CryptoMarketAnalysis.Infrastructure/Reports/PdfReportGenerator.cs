@@ -1,5 +1,6 @@
 using CryptoMarketAnalysis.Application.Abstractions.Reports;
 using CryptoMarketAnalysis.Application.Contracts.Reports;
+using CryptoMarketAnalysis.Infrastructure.Reports.Charts;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -25,42 +26,139 @@ public sealed class PdfReportGenerator : IPdfReportGenerator
         byte[] content = Document
             .Create(container =>
             {
-                container.Page(page =>
-                {
-                    page.Margin(40);
-                    page.Size(PageSizes.A4);
-                    page.DefaultTextStyle(text => text.FontSize(10));
-
-                    page.Header()
-                        .Text("Crypto Market Analysis Report")
-                        .FontSize(20)
-                        .Bold();
-
-                    page.Content()
-                        .Column(column =>
-                        {
-                            column.Spacing(12);
-
-                            column.Item().Element(container => ComposeMetadata(container, report));
-                            column.Item().Element(container => ComposeSummary(container, report));
-                            column.Item().Element(container => ComposeHistoricalTable(container, report));
-                            column.Item().Element(ComposeNotes);
-                        });
-
-                    page.Footer()
-                        .AlignCenter()
-                        .Text(text =>
-                        {
-                            text.Span("Page ");
-                            text.CurrentPageNumber();
-                            text.Span(" of ");
-                            text.TotalPages();
-                        });
-                });
+                ComposeMainPage(container, report);
+                ComposePriceChartPage(container, report);
+                ComposeVolumeChartPage(container, report);
             })
             .GeneratePdf();
 
         return Task.FromResult(content);
+    }
+
+    private static void ComposeMainPage(
+        IDocumentContainer container,
+        MarketAnalysisReportModel report)
+    {
+        container.Page(page =>
+        {
+            page.Margin(40);
+            page.Size(PageSizes.A4);
+            page.DefaultTextStyle(text => text.FontSize(10));
+
+            page.Header()
+                .Text("Crypto Market Analysis Report")
+                .FontSize(20)
+                .Bold();
+
+            page.Content()
+                .Column(column =>
+                {
+                    column.Spacing(12);
+
+                    column.Item().Element(container => ComposeMetadata(container, report));
+                    column.Item().Element(container => ComposeSummary(container, report));
+                    column.Item().Element(container => ComposeHistoricalTable(container, report));
+                    column.Item().Element(ComposeNotes);
+                });
+
+            ComposeFooter(page);
+        });
+    }
+
+    private static void ComposePriceChartPage(
+        IDocumentContainer container,
+        MarketAnalysisReportModel report)
+    {
+        container.Page(page =>
+        {
+            page.Margin(40);
+            page.Size(PageSizes.A4);
+            page.DefaultTextStyle(text => text.FontSize(10));
+
+            page.Header()
+                .Text("Price chart")
+                .FontSize(20)
+                .Bold();
+
+            page.Content()
+                .Element(container => ComposePriceChart(container, report));
+
+            ComposeFooter(page);
+        });
+    }
+
+    private static void ComposeVolumeChartPage(
+        IDocumentContainer container,
+        MarketAnalysisReportModel report)
+    {
+        container.Page(page =>
+        {
+            page.Margin(40);
+            page.Size(PageSizes.A4);
+            page.DefaultTextStyle(text => text.FontSize(10));
+
+            page.Header()
+                .Text("Volume chart")
+                .FontSize(20)
+                .Bold();
+
+            page.Content()
+                .Element(container => ComposeVolumeChart(container, report));
+
+            ComposeFooter(page);
+        });
+    }
+
+    private static void ComposeFooter(
+        PageDescriptor page)
+    {
+        page.Footer()
+            .AlignCenter()
+            .Text(text =>
+            {
+                text.Span("Page ");
+                text.CurrentPageNumber();
+                text.Span(" of ");
+                text.TotalPages();
+            });
+    }
+
+    private static void ComposePriceChart(
+        IContainer container,
+        MarketAnalysisReportModel report)
+    {
+        container.Column(column =>
+        {
+            column.Spacing(6);
+
+            column.Item()
+                .Text($"{report.Symbol} price dynamics ({report.MarketDataSourceCode ?? "ALL"})")
+                .FontSize(14)
+                .Bold();
+
+            string svg = PriceChartSvgBuilder.Build(report.Points);
+
+            column.Item().Svg(svg);
+        });
+    }
+
+    private static void ComposeVolumeChart(
+        IContainer container,
+        MarketAnalysisReportModel report)
+    {
+        container.Column(column =>
+        {
+            column.Spacing(6);
+
+            column.Item()
+                .Text($"{report.Symbol} trading volume ({report.MarketDataSourceCode ?? "ALL"})")
+                .FontSize(14)
+                .Bold();
+
+            string svg = VolumeChartSvgBuilder.Build(report.Points);
+
+            column.Item().Svg(svg);
+        });
     }
 
     private static void ComposeMetadata(
@@ -183,6 +281,7 @@ public sealed class PdfReportGenerator : IPdfReportGenerator
             column.Item().Text("MarketCapUsd can be null for Binance because Binance spot endpoints return trading-pair data, not asset capitalization.");
             column.Item().Text("Volatility is calculated as sample standard deviation of period returns and is not annualized.");
             column.Item().Text("Correlation is calculated using returns matched by TimestampUtc.");
+            column.Item().Text("Historical table can be truncated for long periods to keep the PDF readable.");
         });
     }
 
