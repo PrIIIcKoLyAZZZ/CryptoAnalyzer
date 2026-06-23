@@ -9,6 +9,9 @@ namespace CryptoMarketAnalysis.Infrastructure.Reports;
 
 public sealed class PdfReportGenerator : IPdfReportGenerator
 {
+    private const int MaxHistoricalTableRows = 50;
+    private const int HistoricalTableEdgeRows = 25;
+
     public Task<byte[]> GenerateAsync(
         MarketAnalysisReportModel report,
         CancellationToken cancellationToken = default)
@@ -129,6 +132,14 @@ public sealed class PdfReportGenerator : IPdfReportGenerator
 
             column.Item().Text("Historical data").FontSize(14).Bold();
 
+            if (report.Points.Count > MaxHistoricalTableRows)
+            {
+                column.Item()
+                    .Text($"Historical table is truncated. Showing first {HistoricalTableEdgeRows} and last {HistoricalTableEdgeRows} rows. Total points: {report.Points.Count}.")
+                    .FontSize(9)
+                    .Italic();
+            }
+
             column.Item().Table(table =>
             {
                 table.ColumnsDefinition(columns =>
@@ -147,7 +158,10 @@ public sealed class PdfReportGenerator : IPdfReportGenerator
                     AddHeaderCell(header, "Volume 24h USD");
                 });
 
-                foreach (MarketAnalysisReportPointDto point in report.Points.OrderBy(point => point.TimestampUtc))
+                IReadOnlyCollection<MarketAnalysisReportPointDto> visiblePoints =
+                    GetVisibleHistoricalPoints(report.Points);
+
+                foreach (MarketAnalysisReportPointDto point in visiblePoints.OrderBy(point => point.TimestampUtc))
                 {
                     AddCell(table, FormatDateTime(point.TimestampUtc));
                     AddCell(table, FormatDecimal(point.PriceUsd));
@@ -233,5 +247,17 @@ public sealed class PdfReportGenerator : IPdfReportGenerator
         return value.HasValue
             ? FormatDecimal(value.Value)
             : "N/A";
+    }
+
+    private static IReadOnlyCollection<MarketAnalysisReportPointDto> GetVisibleHistoricalPoints(
+        IReadOnlyCollection<MarketAnalysisReportPointDto> points)
+    {
+        if (points.Count <= MaxHistoricalTableRows)
+            return points;
+
+        return points
+            .Take(HistoricalTableEdgeRows)
+            .Concat(points.TakeLast(HistoricalTableEdgeRows))
+            .ToArray();
     }
 }
