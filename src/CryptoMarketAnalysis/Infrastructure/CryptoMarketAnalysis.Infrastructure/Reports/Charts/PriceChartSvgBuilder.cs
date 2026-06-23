@@ -23,7 +23,7 @@ internal static class PriceChartSvgBuilder
             .ToArray();
 
         if (orderedPoints.Length < 2)
-            return BuildEmptyChart("Price chart is not available. Not enough data.");
+            return BuildEmptyChart("Недостаточно данных для построения графика цены.");
 
         decimal minPrice = orderedPoints.Min(point => point.PriceUsd);
         decimal maxPrice = orderedPoints.Max(point => point.PriceUsd);
@@ -74,7 +74,7 @@ internal static class PriceChartSvgBuilder
         AppendPoint(svg, plotPoints.First(), "#16a34a");
         AppendPoint(svg, plotPoints.Last(), "#dc2626");
 
-        svg.AppendLine("""<text x="400" y="18" text-anchor="middle" font-size="14" font-family="Arial" font-weight="bold" fill="#111827">Price USD</text>""");
+        svg.AppendLine("""<text x="400" y="18" text-anchor="middle" font-size="14" font-family="Arial" font-weight="bold" fill="#111827">Цена (USD)</text>""");
         svg.AppendLine("</svg>");
 
         return svg.ToString();

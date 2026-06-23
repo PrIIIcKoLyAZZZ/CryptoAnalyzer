@@ -27,7 +27,7 @@ internal static class VolumeChartSvgBuilder
             .ToArray();
 
         if (orderedPoints.Length < 2)
-            return BuildEmptyChart("Volume data is not available for the selected period/source.");
+            return BuildEmptyChart("Данные по объему торгов отсутствуют для выбранного периода.");
 
         decimal minVolume = orderedPoints.Min(point => point.Volume);
         decimal maxVolume = orderedPoints.Max(point => point.Volume);
@@ -63,9 +63,9 @@ internal static class VolumeChartSvgBuilder
 
         svg.AppendLine($"""<polyline points="{string.Join(' ', plotPoints)}" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>""");
 
-        svg.AppendLine($"""<text x="{Width / 2}" y="18" text-anchor="middle" font-size="14" font-family="Arial" font-weight="bold" fill="#111827">Volume 24h USD</text>""");
-        svg.AppendLine($"""<text x="{PaddingLeft}" y="{Height - 8}" text-anchor="start" font-size="10" font-family="Arial" fill="#4b5563">Min: {EscapeXml(FormatCompactMoney(minVolume))}</text>""");
-        svg.AppendLine($"""<text x="{Width - PaddingRight}" y="{Height - 8}" text-anchor="end" font-size="10" font-family="Arial" fill="#4b5563">Max: {EscapeXml(FormatCompactMoney(maxVolume))}</text>""");
+        svg.AppendLine($"""<text x="{Width / 2}" y="18" text-anchor="middle" font-size="14" font-family="Arial" font-weight="bold" fill="#111827">Объем за 24 часа (USD)</text>""");
+        svg.AppendLine($"""<text x="{PaddingLeft}" y="{Height - 8}" text-anchor="start" font-size="10" font-family="Arial" fill="#4b5563">Минимум: {EscapeXml(FormatCompactMoney(minVolume))}</text>""");
+        svg.AppendLine($"""<text x="{Width - PaddingRight}" y="{Height - 8}" text-anchor="end" font-size="10" font-family="Arial" fill="#4b5563">Максимум: {EscapeXml(FormatCompactMoney(maxVolume))}</text>""");
 
         svg.AppendLine("</svg>");
 
