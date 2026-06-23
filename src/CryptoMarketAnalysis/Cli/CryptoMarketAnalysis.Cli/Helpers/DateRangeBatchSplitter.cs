@@ -22,11 +22,28 @@ public static class DateRangeBatchSplitter
 
         while (currentFromUtc <= normalizedToUtc)
         {
-            DateTime currentToUtc = currentFromUtc
-                .AddDays(batchDays - 1);
+            DateTime currentToUtc = currentFromUtc.AddDays(batchDays - 1);
 
-            if (currentToUtc > normalizedToUtc)
-                currentToUtc = normalizedToUtc;
+            if (currentToUtc >= normalizedToUtc)
+            {
+                if (batches.Count > 0 && currentFromUtc == normalizedToUtc)
+                {
+                    DateRangeBatch previous = batches[^1];
+
+                    batches[^1] = previous with
+                    {
+                        ToUtc = normalizedToUtc,
+                    };
+                }
+                else
+                {
+                    batches.Add(new DateRangeBatch(
+                        currentFromUtc,
+                        normalizedToUtc));
+                }
+
+                break;
+            }
 
             batches.Add(new DateRangeBatch(
                 currentFromUtc,

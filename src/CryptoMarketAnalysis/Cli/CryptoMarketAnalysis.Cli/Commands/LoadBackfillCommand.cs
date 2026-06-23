@@ -3,6 +3,7 @@ using CryptoMarketAnalysis.Cli.Helpers;
 using CryptoMarketAnalysis.Cli.Settings;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using System.Globalization;
 
 namespace CryptoMarketAnalysis.Cli.Commands;
 
@@ -132,6 +133,10 @@ public sealed class LoadBackfillCommand : AsyncCommand<BackfillCommandSettings>
                 Loaded = group.Sum(result => result.Loaded),
                 Skipped = group.Sum(result => result.Skipped),
                 Errors = group.Count(result => !string.IsNullOrWhiteSpace(result.Error)),
+                Error = string.Join("; ", group
+                    .Where(result => !string.IsNullOrWhiteSpace(result.Error))
+                    .Select(result => result.Error)
+                    .Distinct()),
             })
             .OrderBy(result => result.Source)
             .ThenBy(result => result.Symbol)
@@ -162,17 +167,19 @@ public sealed class LoadBackfillCommand : AsyncCommand<BackfillCommandSettings>
             .AddColumn("Batches")
             .AddColumn("Loaded")
             .AddColumn("Skipped")
-            .AddColumn("Errors");
+            .AddColumn("Errors")
+            .AddColumn("Error");
 
         foreach (var result in groupedResults)
         {
             table.AddRow(
                 result.Source,
                 result.Symbol,
-                result.Batches.ToString(),
-                result.Loaded.ToString(),
-                result.Skipped.ToString(),
-                result.Errors.ToString());
+                result.Batches.ToString(CultureInfo.InvariantCulture),
+                result.Loaded.ToString(CultureInfo.InvariantCulture),
+                result.Skipped.ToString(CultureInfo.InvariantCulture),
+                result.Errors.ToString(CultureInfo.InvariantCulture),
+                string.IsNullOrWhiteSpace(result.Error) ? "OK" : result.Error);
         }
 
         AnsiConsole.Write(table);
