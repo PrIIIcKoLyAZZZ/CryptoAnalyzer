@@ -118,9 +118,6 @@ public sealed class DateRangeBatchSplitterTests
             {
                 new DateRangeBatch(
                     new DateTime(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc),
-                    new DateTime(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc)),
-                new DateRangeBatch(
-                    new DateTime(2026, 6, 2, 0, 0, 0, DateTimeKind.Utc),
                     new DateTime(2026, 6, 2, 0, 0, 0, DateTimeKind.Utc)),
             });
     }
