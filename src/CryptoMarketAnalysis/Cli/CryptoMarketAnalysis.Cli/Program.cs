@@ -38,8 +38,14 @@ app.Configure(config =>
     config.AddCommand<VersionCommand>("version")
         .WithDescription("Show CLI version.");
 
-    config.AddCommand<LoadCommand>("load")
-        .WithDescription("Load market data for one or more symbols.");
+    config.AddBranch("load", load =>
+    {
+        load.SetDescription("Load market data.");
+        load.AddCommand<LoadCommand>("run")
+            .WithDescription("Load market data for a short period.");
+        load.AddCommand<LoadBackfillCommand>("backfill")
+            .WithDescription("Load market data using date range batching.");
+    });
 
     config.AddBranch("analytics", analytics =>
     {
@@ -54,10 +60,10 @@ app.Configure(config =>
         analytics.AddCommand<CorrelationCommand>("correlation")
             .WithDescription("Calculate Pearson correlation between two symbols.");
     });
+
     config.AddBranch("report", report =>
     {
         report.SetDescription("Generate reports.");
-
         report.AddCommand<PdfReportCommand>("pdf")
             .WithDescription("Generate market analysis PDF report.");
     });

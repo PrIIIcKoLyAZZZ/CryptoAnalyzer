@@ -50,6 +50,111 @@ ETH BINANCE Loaded=0 Skipped=10 Error=OK
 
 ---
 
+---
+
+## load backfill
+
+### Назначение
+
+Массовая загрузка исторических рыночных данных за большой период с разбиением на батчи.
+
+Команда предназначена для backfill-сценариев, когда нужно загрузить данные за месяцы или годы.
+
+В отличие от обычной команды `load`, backfill:
+
+- разбивает период на несколько батчей;
+- показывает progress;
+- агрегирует результат по каждому активу и источнику;
+- безопасно обрабатывает повторную загрузку через механизм пропуска дублей.
+
+### Пример
+
+```bash
+dotnet run --project src/CryptoMarketAnalysis/Cli/CryptoMarketAnalysis.Cli -- \
+  load backfill \
+  --symbols BTC \
+  --symbols ETH \
+  --from 2026-06-01 \
+  --to 2026-06-10 \
+  --sources BINANCE \
+  --batch-days 5
+```
+
+### Пример для большого периода
+
+```bash
+dotnet run --project src/CryptoMarketAnalysis/Cli/CryptoMarketAnalysis.Cli -- \
+  load backfill \
+  --symbols BTC \
+  --symbols ETH \
+  --from 2022-01-01 \
+  --to 2026-06-10 \
+  --sources BINANCE \
+  --batch-days 90
+```
+
+### Параметры
+
+| Параметр | Обязательный | Описание |
+|---|---:|---|
+| `--symbols` | Да | Символ актива. Для нескольких активов параметр повторяется. |
+| `--from` | Да | Начало периода в UTC. |
+| `--to` | Да | Конец периода в UTC. |
+| `--sources` | Да | Источник данных. Для нескольких источников параметр повторяется. |
+| `--batch-days` | Нет | Размер одного батча в днях. По умолчанию используется `30`. |
+
+### Пример успешного вывода
+
+```text
+Backfill started
+Symbols: BTC, ETH
+Sources: BINANCE
+Period: 2026-06-01 — 2026-06-10
+Batch days: 5
+Total batches per source: 2
+
+Backfill summary
+Status: Success
+Loaded points: 0
+Skipped duplicates: 20
+Errors: 0
+
+Source   Symbol   Batches   Loaded   Skipped   Errors
+BINANCE  BTC      2         0        10        0
+BINANCE  ETH      2         0        10        0
+```
+
+### Типичные ошибки
+
+| Ошибка | Причина |
+|---|---|
+| `At least one --symbols value is required.` | Не указан ни один символ актива. |
+| `At least one --sources value is required.` | Не указан ни один источник данных. |
+| `--from must be less than or equal to --to.` | Дата начала больше даты окончания. |
+| `--batch-days must be greater than zero.` | Размер батча меньше или равен нулю. |
+| Ошибка внешнего API | Внешний источник временно недоступен или сработал rate limit. |
+
+### Особенности
+
+Период разбивается на включительные батчи.
+
+Пример:
+
+```text
+from = 2026-06-01
+to = 2026-06-10
+batch-days = 5
+```
+
+Будут сформированы батчи:
+
+```text
+2026-06-01 — 2026-06-05
+2026-06-06 — 2026-06-10
+```
+
+Повторный запуск той же команды не должен создавать дубли в БД. Уже существующие точки учитываются как `Skipped duplicates`.
+
 ## analytics price-change
 
 ### Назначение
