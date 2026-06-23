@@ -20,6 +20,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/CryptoMarketAnalysis.Application.Tests/CryptoMarketAnalysis.Application.Tests.csproj" />
+    <Project Path="tests/CryptoMarketAnalysis.Cli.Tests/CryptoMarketAnalysis.Cli.Tests.csproj" />
     <Project Path="tests/CryptoMarketAnalysis.Infrastructure.Tests/CryptoMarketAnalysis.Infrastructure.Tests.csproj" />
   </Folder>
 </Solution>
