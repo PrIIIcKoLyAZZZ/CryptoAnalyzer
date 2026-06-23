@@ -46,7 +46,7 @@ public sealed class PdfReportGenerator : IPdfReportGenerator
             page.DefaultTextStyle(text => text.FontSize(10));
 
             page.Header()
-                .Text("Crypto Market Analysis Report")
+                .Text("Отчет по анализу криптовалютного рынка")
                 .FontSize(20)
                 .Bold();
 
@@ -76,7 +76,7 @@ public sealed class PdfReportGenerator : IPdfReportGenerator
             page.DefaultTextStyle(text => text.FontSize(10));
 
             page.Header()
-                .Text("Price chart")
+                .Text("График цены")
                 .FontSize(20)
                 .Bold();
 
@@ -98,7 +98,7 @@ public sealed class PdfReportGenerator : IPdfReportGenerator
             page.DefaultTextStyle(text => text.FontSize(10));
 
             page.Header()
-                .Text("Volume chart")
+                .Text("График объема торгов")
                 .FontSize(20)
                 .Bold();
 
@@ -116,9 +116,9 @@ public sealed class PdfReportGenerator : IPdfReportGenerator
             .AlignCenter()
             .Text(text =>
             {
-                text.Span("Page ");
+                text.Span("Страница ");
                 text.CurrentPageNumber();
-                text.Span(" of ");
+                text.Span(" из ");
                 text.TotalPages();
             });
     }
@@ -132,7 +132,7 @@ public sealed class PdfReportGenerator : IPdfReportGenerator
             column.Spacing(6);
 
             column.Item()
-                .Text($"{report.Symbol} price dynamics ({report.MarketDataSourceCode ?? "ALL"})")
+                .Text($"Динамика цен {report.Symbol} ({report.MarketDataSourceCode ?? "ALL"})")
                 .FontSize(14)
                 .Bold();
 
@@ -151,7 +151,7 @@ public sealed class PdfReportGenerator : IPdfReportGenerator
             column.Spacing(6);
 
             column.Item()
-                .Text($"{report.Symbol} trading volume ({report.MarketDataSourceCode ?? "ALL"})")
+                .Text($"Объем Торгов {report.Symbol} ({report.MarketDataSourceCode ?? "ALL"})")
                 .FontSize(14)
                 .Bold();
 
@@ -169,12 +169,12 @@ public sealed class PdfReportGenerator : IPdfReportGenerator
         {
             column.Spacing(4);
 
-            column.Item().Text("Metadata").FontSize(14).Bold();
+            column.Item().Text("Параметры анализа").FontSize(14).Bold();
 
-            column.Item().Text($"Symbol: {report.Symbol}");
-            column.Item().Text($"Source: {report.MarketDataSourceCode ?? "ALL"}");
-            column.Item().Text($"Period: {FormatDateTime(report.FromUtc)} — {FormatDateTime(report.ToUtc)}");
-            column.Item().Text($"Generated at UTC: {FormatDateTime(report.GeneratedAtUtc)}");
+            column.Item().Text($"Актив: {report.Symbol}");
+            column.Item().Text($"Источник данных: {report.MarketDataSourceCode ?? "ALL"}");
+            column.Item().Text($"Период: {FormatDateTime(report.FromUtc)} — {FormatDateTime(report.ToUtc)}");
+            column.Item().Text($"Дата формирования (UTC): {FormatDateTime(report.GeneratedAtUtc)}");
         });
     }
 
@@ -184,40 +184,119 @@ public sealed class PdfReportGenerator : IPdfReportGenerator
     {
         container.Column(column =>
         {
-            column.Spacing(6);
+            column.Spacing(8);
 
-            column.Item().Text("Summary").FontSize(14).Bold();
+            column.Item().Text("Ключевые показатели");
 
-            column.Item().Table(table =>
+            column.Item().Row(row =>
             {
-                table.ColumnsDefinition(columns =>
-                {
-                    columns.RelativeColumn();
-                    columns.RelativeColumn();
-                });
+                row.Spacing(8);
 
-                AddRow(table, "Points count", report.Points.Count.ToString(CultureInfo.InvariantCulture));
+                AddSummaryCard(
+                    row,
+                    "Начальная цена",
+                    FormatNullableDecimal(report.PriceChange.StartPriceUsd),
+                    "USD");
 
-                AddRow(table, "Start price, USD", FormatNullableDecimal(report.PriceChange.StartPriceUsd));
-                AddRow(table, "End price, USD", FormatNullableDecimal(report.PriceChange.EndPriceUsd));
-                AddRow(table, "Absolute change, USD", FormatNullableDecimal(report.PriceChange.AbsoluteChangeUsd));
-                AddRow(table, "Percentage change, %", FormatNullableDecimal(report.PriceChange.PercentageChange));
+                AddSummaryCard(
+                    row,
+                    "Конечная цена",
+                    FormatNullableDecimal(report.PriceChange.EndPriceUsd),
+                    "USD");
 
-                AddRow(table, "Average return, %", FormatNullableDecimal(report.Volatility.AverageReturnPercent));
-                AddRow(table, "Volatility, %", FormatNullableDecimal(report.Volatility.VolatilityPercent));
+                AddSummaryCard(
+                    row,
+                    "Изменение цены",
+                    FormatPercent(report.PriceChange.PercentageChange),
+                    "процентное изменение");
+
+                AddSummaryCard(
+                    row,
+                    "Волатильность",
+                    FormatPercent(report.Volatility.VolatilityPercent),
+                    "не приведена к году");
+            });
+
+            column.Item().Row(row =>
+            {
+                row.Spacing(8);
+
+                AddSummaryCard(
+                    row,
+                    "Количество точек",
+                    report.Points.Count.ToString(CultureInfo.InvariantCulture),
+                    "исторических записей");
+
+                AddSummaryCard(
+                    row,
+                    "Средняя доходность",
+                    FormatPercent(report.Volatility.AverageReturnPercent),
+                    "за период");
 
                 if (report.Correlation is null)
                 {
-                    AddRow(table, "Correlation", "Not requested");
+                    AddSummaryCard(
+                        row,
+                        "Корреляция",
+                        "N/A",
+                        "not requested");
                 }
                 else
                 {
-                    AddRow(table, "Correlation pair", $"{report.Correlation.BaseSymbol}/{report.Correlation.QuoteSymbol}");
-                    AddRow(table, "Matched returns", report.Correlation.MatchedReturnsCount.ToString(CultureInfo.InvariantCulture));
-                    AddRow(table, "Pearson correlation", FormatNullableDecimal(report.Correlation.PearsonCorrelation));
+                    AddSummaryCard(
+                        row,
+                        "Корреляция",
+                        FormatNullableDecimal(report.Correlation.PearsonCorrelation),
+                        $"{report.Correlation.BaseSymbol}/{report.Correlation.QuoteSymbol}");
                 }
+
+                AddSummaryCard(
+                    row,
+                    "Сопоставлено доходностей",
+                    report.Correlation?.MatchedReturnsCount.ToString(CultureInfo.InvariantCulture) ?? "N/A",
+                    "для расчета корреляции");
             });
         });
+    }
+
+    private static void AddSummaryCard(
+        RowDescriptor row,
+        string title,
+        string value,
+        string subtitle)
+    {
+        row.RelativeItem()
+            .Border(1)
+            .BorderColor(Colors.Grey.Lighten2)
+            .Background(Colors.Grey.Lighten5)
+            .Padding(8)
+            .Column(column =>
+            {
+                column.Spacing(3);
+
+                column.Item()
+                    .Text(title)
+                    .FontSize(8)
+                    .FontColor(Colors.Grey.Darken2);
+
+                column.Item()
+                    .Text(value)
+                    .FontSize(13)
+                    .Bold();
+
+                column.Item()
+                    .Text(subtitle)
+                    .FontSize(7)
+                    .FontColor(Colors.Grey.Darken1);
+            });
+    }
+
+    private static string FormatPercent(
+        decimal? value)
+    {
+        return value.HasValue
+            ? $"{value.Value.ToString("N2", CultureInfo.InvariantCulture)}%"
+            : "N/A";
     }
 
     private static void ComposeHistoricalTable(
@@ -228,12 +307,12 @@ public sealed class PdfReportGenerator : IPdfReportGenerator
         {
             column.Spacing(6);
 
-            column.Item().Text("Historical data").FontSize(14).Bold();
+            column.Item().Text("Исторические данные");
 
             if (report.Points.Count > MaxHistoricalTableRows)
             {
                 column.Item()
-                    .Text($"Historical table is truncated. Showing first {HistoricalTableEdgeRows} and last {HistoricalTableEdgeRows} rows. Total points: {report.Points.Count}.")
+                    .Text($"$\"\"\"\nТаблица сокращена для повышения читаемости отчета.\nПоказаны первые {{HistoricalTableEdgeRows}} и последние {{HistoricalTableEdgeRows}} записей.\nВсего точек: {{report.Points.Count}}.\n\"\"\".")
                     .FontSize(9)
                     .Italic();
             }
@@ -250,10 +329,10 @@ public sealed class PdfReportGenerator : IPdfReportGenerator
 
                 table.Header(header =>
                 {
-                    AddHeaderCell(header, "Timestamp UTC");
-                    AddHeaderCell(header, "Price USD");
-                    AddHeaderCell(header, "Market Cap USD");
-                    AddHeaderCell(header, "Volume 24h USD");
+                    AddHeaderCell(header, "Дата (UTC)");
+                    AddHeaderCell(header, "Цена (USD)");
+                    AddHeaderCell(header, "Капитализация (USD)");
+                    AddHeaderCell(header, "Объем 24ч (USD)");
                 });
 
                 IReadOnlyCollection<MarketAnalysisReportPointDto> visiblePoints =
@@ -271,28 +350,36 @@ public sealed class PdfReportGenerator : IPdfReportGenerator
     }
 
     private static void ComposeNotes(
-        IContainer container)
+    IContainer container)
+{
+    container.Column(column =>
     {
-        container.Column(column =>
-        {
-            column.Spacing(4);
+        column.Spacing(6);
 
-            column.Item().Text("Notes").FontSize(14).Bold();
-            column.Item().Text("MarketCapUsd can be null for Binance because Binance spot endpoints return trading-pair data, not asset capitalization.");
-            column.Item().Text("Volatility is calculated as sample standard deviation of period returns and is not annualized.");
-            column.Item().Text("Correlation is calculated using returns matched by TimestampUtc.");
-            column.Item().Text("Historical table can be truncated for long periods to keep the PDF readable.");
-        });
-    }
+        column.Item()
+            .Text("Пояснения")
+            .FontSize(14)
+            .Bold();
 
-    private static void AddRow(
-        TableDescriptor table,
-        string name,
-        string value)
-    {
-        AddCell(table, name);
-        AddCell(table, value);
-    }
+        column.Item()
+            .BorderLeft(4)
+            .BorderColor(Colors.Grey.Medium)
+            .Background(Colors.Grey.Lighten5)
+            .Padding(10)
+            .Column(notes =>
+            {
+                notes.Spacing(6);
+                notes.Item().Text(
+                    "• Капитализация может отсутствовать для данных Binance, так как спотовые API Binance возвращают информацию по торговым парам, а не по капитализации актива.");
+                notes.Item().Text(
+                    "• Волатильность рассчитана как выборочное стандартное отклонение доходностей за выбранный период и не приведена к годовому значению.");
+                notes.Item().Text(
+                    "• Корреляция рассчитана по доходностям, сопоставленным по времени наблюдения.");
+                notes.Item().Text(
+                    "• Для больших периодов историческая таблица автоматически сокращается для сохранения читаемости отчета.");
+            });
+    });
+}
 
     private static void AddHeaderCell(
         TableCellDescriptor header,
