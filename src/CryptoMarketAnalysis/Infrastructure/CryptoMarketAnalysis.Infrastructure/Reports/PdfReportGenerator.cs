@@ -312,7 +312,10 @@ public sealed class PdfReportGenerator : IPdfReportGenerator
             if (report.Points.Count > MaxHistoricalTableRows)
             {
                 column.Item()
-                    .Text($"$\"\"\"\nТаблица сокращена для повышения читаемости отчета.\nПоказаны первые {{HistoricalTableEdgeRows}} и последние {{HistoricalTableEdgeRows}} записей.\nВсего точек: {{report.Points.Count}}.\n\"\"\".")
+                    .Text(
+                        $"Таблица сокращена для повышения читаемости отчета. " +
+                        $"Показаны первые {HistoricalTableEdgeRows} и последние {HistoricalTableEdgeRows} записей. " +
+                        $"Всего точек: {report.Points.Count}.")
                     .FontSize(9)
                     .Italic();
             }
