@@ -13,6 +13,7 @@ public sealed class BinanceSymbolMapper
         {
             "BTC" => "BTCUSDT",
             "ETH" => "ETHUSDT",
+            "DOGE" => "DOGEUSDT",
             _ => throw new InvalidOperationException($"Unsupported Binance symbol '{symbol}'."),
         };
     }
